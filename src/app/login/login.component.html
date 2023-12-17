@@ -1,0 +1,35 @@
+<div class="home-container">
+    <!-- <h1 class="title-text">Chat App</h1>
+    <h3 class="title-author">By Pranay Nagaraju</h3> -->
+
+
+    <form>
+        <div class="ball">
+
+        </div>
+        <div class="label">
+            <label>Email</label>
+            <input class="input-email" [(ngModel)]="email" name="email" type="email" required=true />
+        </div>
+        <div class="label">
+            <label>Password</label>
+            <div style=" display: flex;  align-items: center; position: relative; ">
+                <input class="input-password" [type]="passVisible ? 'text' : 'password'" [(ngModel)]="password"
+                    name="password" required=true />
+                <img (click)="visibility()"
+                    [src]="passVisible ? '../../assets/visible.png' : '../../assets/invisible.png'" height="20px"
+                    width="20px" style="position: absolute; cursor: pointer;right:8px;" />
+            </div>
+
+        </div>
+        <br>
+        <div class="btn">
+            <button class="sign-in-button" (click)="login($event)">
+                Sign in
+            </button>
+        </div>
+        <br />
+        <button class="google-login" (click)="googleLogin()"><span><img src="../../assets/google.png"></span>Sign in
+            with Google</button>
+    </form>
+</div>

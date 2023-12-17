@@ -1,0 +1,23 @@
+   .header
+   {
+     background:#4E41DD;
+     height:70px;
+     padding-left:30px;
+     display:flex;
+     align-items:center;
+   }
+   
+   .profile-image
+   {
+    height: 40px;
+    width: 40px;
+    border: 0;
+    border-radius:50%;
+   }
+   .dropdown
+   {
+    z-index: 1000;
+    background: red;
+    height: 500px;
+    width: 100px;
+   }
