@@ -1,28 +1,36 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, NgZone  } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { onAuthStateChanged,signOut } from 'firebase/auth';
 import { auth } from '../../firebase/firebaseConfig';
-import { UserService } from '../services/user.service';
+import { AnimationComponent } from '../animation/animation.component';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule,AnimationComponent,CommonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent  implements OnInit {
+  constructor(private router: Router ,private ngZone: NgZone) { }
   passVisible: boolean = false;
   email: string = "";
   password: string = "";
-
-
-
-
-  //constructor(private router: Router, private _userService: UserService) { }
-  constructor(private router: Router) { }
+  isLoading=true;
+ 
+  ngOnInit(): void {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.ngZone.run(() => {
+          this.router.navigate(['/home']);
+        });
+      } 
+    });
+  }
   visibility(): void {
     this.passVisible = !this.passVisible;
     console.log(this.passVisible)
@@ -61,41 +69,17 @@ export class LoginComponent {
   //   const provider = await new GoogleAuthProvider();
   //   return await signInWithPopup(auth, provider);
   // }
-
-
-  //Need to review this
-  // async googleLogin() {
-  //   const provider = await new GoogleAuthProvider();
-  //   const user = await signInWithPopup(auth, provider);
-  //   // ... Now you have access to the user object ...
-  //   console.log(JSON.stringify(user))
-  // // You can also just return specific details instead of the entire object.
-  // }
   
   async googleLogin(): Promise<any> {
     try {
       const provider = await new GoogleAuthProvider();
       const userResult = await signInWithPopup(auth, provider);
-      const userDetails = {
-        userName: userResult.user.displayName,
-        userEmail: userResult.user.email,
-        userImage: userResult.user.photoURL,
-      };
-      sessionStorage.setItem("userDetails",JSON.stringify(userDetails));
-      //this._userService.setUserDetails(userDetails);
+
       if (userResult) {
         this.router.navigate(['/home']);
       }
     } catch (error:any) {
-      console.error('Error during Google login:', error);
       console.log("Login failed due to an error")
-      // if (error.code === "auth/popup-closed-by-user") {
-      //   console.log("closed by the user")
-      // } else if (error.code === "auth/network-error") {
-      //   console.log("network problem")
-      // } else {
-      //   console.log("Login failed due to an error")
-      // }
     }
   }
   
