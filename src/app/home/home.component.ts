@@ -1,61 +1,60 @@
 import { Component, ElementRef,HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { onAuthStateChanged,signOut } from 'firebase/auth';
 import { auth } from '../../firebase/firebaseConfig';
 import { CommonModule } from '@angular/common';
-
+import { AnimationComponent } from '../animation/animation.component';
+import { FormsModule } from '@angular/forms';
+import { HttpClient,HttpClientModule, HttpHeaders} from '@angular/common/http';
+import { signOut } from 'firebase/auth';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,AnimationComponent,FormsModule,HttpClientModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit,OnDestroy{
  userLoggedIn=false;
  userDetails:any;
  userImage:any='../../assets/user.png';
  userName:any;
+ showFiller = true;
  userEmail:any;
+ fileUpload: File | undefined;
+ isAnimation=true;
  profilebtnSelected:boolean;
-  // constructor(private router:Router, private userService:UserService){}
-  constructor(private router:Router,private elRef: ElementRef){
+ loginCheck:any;
+ token:any;
+ postText: any="";
+ url='http://localhost:8080/api/';
+  constructor(private router:Router,private elRef: ElementRef, private http: HttpClient){
     this.profilebtnSelected=false;
+  }
+  ngOnDestroy(): void {
+   if (this.loginCheck) {
+    this.loginCheck.unsubscribe();
+  }
   }
 
   ngOnInit() {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log(user)
-        this.userLoggedIn=true;
-        this.userName=user.displayName;
-        this.userEmail=user.email;
-        this.userImage=user.photoURL;
-        this.profilebtnSelected=false;
-      } else {
-        this.router.navigate([''])
+    this.token=localStorage.getItem('token');
+    const verifyTokenUrl=this.url+"?token="+this.token;
+    this.loginCheck = this.http.get(verifyTokenUrl).subscribe(
+      response => {
+        let user: any = response;
+        this.userName = user.name;
+        this.userEmail = user.email;
+        if(user.photoURL)
+        {
+        this.userImage = user.photoURL;
+        }
+        console.log("API call here");
+      },
+      error => {
+          ;
       }
-    });
-    document.addEventListener('click', this.onDocumentClick.bind(this));
-  }
-  // const handleLogout = () => {
-  //   signOut(auth)
-  //     .then(() => {
-  //       setUser(null);
-  //     })
-  //     .catch((error) => {
-  //       console.log("Logout error:", error);
-  //     });
-  // };
-  //@HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    console.log("closing")
-    // Check if the click occurred outside the dropdown element
-    if (!this.elRef.nativeElement.contains(event.target)) {
-      console.log(this.profilebtnSelected)
-      this.profilebtnSelected = false;
-    }
+    )
   }
 onProfileSelected():void
   {
@@ -71,14 +70,48 @@ onProfileSelected():void
     console.log("signout")
     signOut(auth).then(() => {
       console.log("here")  
+      localStorage.removeItem('token');
       this.router.navigate([''])
 
     }).catch((error) => {
-      // An error happened.
+
     });
     
   }
-  ngOnDestroy() {
-    document.removeEventListener('click', this.onDocumentClick.bind(this));
+  uploadImage(event:Event):void{
+    const inputElement = event.target as HTMLInputElement;
+  const file = inputElement?.files?.[0];
+
+  if (file) {
+    this.fileUpload = file;
+    console.log(this.fileUpload);
   }
+}
+postUpdate():void
+{
+  if (this.fileUpload) {
+    const formData = new FormData();
+    formData.append('token', this.token.toString());
+    formData.append('file', this.fileUpload as Blob, 'filename');
+    formData.append('postText', this.postText);
+    console.log(this.url + 'upload'+formData)
+    console.log(this.fileUpload.toString());
+    const sendPostUrl = `${this.url}upload`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json', 
+    });
+
+    this.http.post<any>(sendPostUrl, formData).subscribe(
+      (response) => {
+        console.log('POST request successful:', response);
+      },
+      (error) => {
+        console.error('POST request error:', error);
+      }
+    );
+
+
+  }
+
+}
 }
