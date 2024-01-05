@@ -14,16 +14,11 @@
 .home-container {
     width: 100svw;
     height: 100svh;
-    background: linear-gradient(to left, white,#b1caff);
+    background: #16191f;
 }
 .form-container{
-    background: linear-gradient(to right, #ffda96,#ffbe96);
+    background: #2d3137;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(9, 44, 101, 0.5);
-}
-.back-to-home:hover
-{
-    text-decoration: underline;
 }
 .label {
 width: 100%;
