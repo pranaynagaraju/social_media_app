@@ -27,6 +27,8 @@ export class HomeComponent implements OnInit,OnDestroy{
  loginCheck:any;
  token:any;
  postText: any="";
+ postsList: any[]=[];
+ totalNoOfPosts=0;
  url='http://localhost:8080/api/';
   constructor(private router:Router,private elRef: ElementRef, private http: HttpClient){
     this.profilebtnSelected=false;
@@ -38,24 +40,52 @@ export class HomeComponent implements OnInit,OnDestroy{
   }
 
   ngOnInit() {
-    this.token=localStorage.getItem('token');
-    const verifyTokenUrl=this.url+"?token="+this.token;
-    this.loginCheck = this.http.get(verifyTokenUrl).subscribe(
-      response => {
-        let user: any = response;
-        this.userName = user.name;
-        this.userEmail = user.email;
-        if(user.photoURL)
-        {
-        this.userImage = user.photoURL;
-        }
-        console.log("API call here");
-      },
-      error => {
-          ;
-      }
-    )
+    // if (typeof localStorage !== 'undefined') {
+    //   this.token=localStorage.getItem('token');
+    // } 
+    // const verifyTokenUrl=this.url+"user/user-details"+"?token="+this.token;
+    // this.loginCheck = this.http.get(verifyTokenUrl).subscribe(
+    //   response => {
+    //     let user: any = response;
+    //     this.userName = user.name;
+    //     this.userEmail = user.email;
+    //     if(user.photoURL)
+    //     {
+    //     this.userImage = user.photoURL;
+    //     }
+
+    //     console.log("API call here");
+    //   },
+    //   error => {
+    //       ;
+    //   }
+    // )
+    this.getAllPosts();
   }
+
+  closeDropdown():void
+  {
+    if(this.profilebtnSelected)
+    {
+      this.profilebtnSelected=false;
+    }
+    
+  }
+  getAllPosts(): void {
+    const getAllPostUrl = `${this.url}post/get-all-posts?token=${this.token}`;
+    
+    this.http.get(getAllPostUrl).subscribe(
+      (response: any) => {
+        this.postsList = response;
+        this.totalNoOfPosts=this.postsList.length;
+      },
+      (error: any) => {
+        // Handle errors if needed
+      }
+    );
+  }
+  
+
 onProfileSelected():void
   {
   console.log("clicked")
@@ -96,7 +126,7 @@ postUpdate():void
     formData.append('postText', this.postText);
     console.log(this.url + 'upload'+formData)
     console.log(this.fileUpload.toString());
-    const sendPostUrl = `${this.url}upload`;
+    const sendPostUrl = `${this.url}post/upload`;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json', 
     });
@@ -110,7 +140,7 @@ postUpdate():void
       }
     );
 
-
+    this.getAllPosts();
   }
 
 }
