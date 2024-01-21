@@ -5,6 +5,8 @@ import { AnimationComponent } from './animation/animation.component';
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { SignupComponent } from './signup/signup.component';
 import { UpdatedetailsComponent } from './updatedetails/updatedetails.component';
+import { ProfileComponent } from './profile/profile.component';
 
 export const routes: Routes = [{path:'home',component:HomeComponent},{path:'',component:LandingPageComponent},{path:'login',component:LoginComponent},
-{path:'animation',component:AnimationComponent},{path:'signup',component:SignupComponent},{path:'update-details',component:UpdatedetailsComponent}];
+{path:'animation',component:AnimationComponent},{path:'signup',component:SignupComponent},
+{path:'profile',component:ProfileComponent}];
