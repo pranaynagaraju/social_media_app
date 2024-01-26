@@ -23,14 +23,16 @@ export class LoginComponent  implements OnInit {
   password: string = "";
   isAnimation=false;
   token:any;
-  url='http://localhost:8080/';
+  url='http://localhost:8080/api/';
   constructor(private router: Router, private http: HttpClient) { }
    
   ngOnInit(): void {
-    this.token=localStorage.getItem('token');
+    if (typeof localStorage !== 'undefined') {
+      this.token=localStorage.getItem('token');
+    } 
     if(this.token)
     {
-    this.loginCheck = this.http.get(this.url+"?token="+this.token).subscribe(
+    this.loginCheck = this.http.get(this.url+"user/user-details"+"?token="+this.token).subscribe(
       response => {
       this.router.navigate(['/home']);
       }

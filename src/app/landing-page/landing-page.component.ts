@@ -18,12 +18,14 @@ export class LandingPageComponent implements OnInit {
   isAnimation=true;
   token:any;
   loginCheck:any;
-  url='http://localhost:8080/';
+  url='http://localhost:8080/api/';
   constructor(private router:Router,private http:HttpClient){}
   ngOnInit(): void {
-  this.token=localStorage.getItem("token");
+    if (typeof localStorage !== 'undefined') {
+      this.token=localStorage.getItem('token');
+    } 
   if (this.token) {
-    this.url = this.url + '?token=' + this.token;
+    this.url = this.url+"user/user-details"+"?token="+this.token;
     this.loginCheck = this.http.get(this.url).subscribe(
       response => {
         this.router.navigate(['/home']);
