@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient,HttpClientModule, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -11,19 +12,24 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './profile.component.css'
 })
 export class ProfileComponent implements OnInit{
+  @ViewChild('addCommentRef') myInput: ElementRef | undefined;
   profilebtnSelected=false;
   userName="";
   email="";
   userImage="";
   posts:any[]=[];
-  token="";
+  postsLength:undefined | number;
+  savedPostsLength:undefined|number;
+  token:any;
+  isloading=false;
   postDetails:any;
   isPostsSelected=true;
   showPostDetails=false;
   comment="";
+  savedPosts:any[]=[];
   url="http://localhost:8080/api/"
 
-  constructor(private http:HttpClient)
+  constructor(private http:HttpClient, private router:ActivatedRoute)
   {
 
   }
@@ -44,18 +50,52 @@ export class ProfileComponent implements OnInit{
   }
   ngOnInit()
 {
+  this.isloading=true;
+  this.token=localStorage.getItem('token');
   const token =localStorage.getItem('token');
   if(token)
   {
-    this.token=token;
- this.http.get(this.url+"user/user-profile?token="+token).subscribe(
+    console.log();
+ this.http.get(this.url+"user/user-profile?token="+token+"&uid="+this.router.snapshot.params['id']).subscribe(
   (res:any)=>{
     this.userName=res.userName;
     this.userImage=res.userPhotoUrl;
     this.email=res.email;
-    this.posts=res.postDetailsDtoList;
+    this.posts=res.userPosts;
+    this.savedPosts=res.savedPostsList;
+    this.postsLength=this.posts.length;
+    this.savedPostsLength=this.savedPosts.length;
+  
+    this.isloading=false;
   }
  )
+  }
+}
+onSaveClick(post:any) {
+  post.saved = !post.saved;
+  console.log(this.savedPosts.length)
+  if(post.saved)
+  {
+    this.savedPosts.unshift(post);
+  }
+  console.log(this.savedPosts.length)
+  const params = {
+    token: this.token,
+    postId: post.postId.toString(),
+  };
+  return this.http.post<string>(`${this.url}post/save`, null, { params }).subscribe(
+    (response:String)=>
+    {
+        console.log(response);
+    }
+  );
+} 
+toggleCaret():void
+{
+  if(this.myInput)
+  {
+  const inputElement = this.myInput.nativeElement as HTMLInputElement;
+  inputElement.focus();
   }
 }
 

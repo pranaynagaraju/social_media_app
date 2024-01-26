@@ -50,7 +50,7 @@
 }
 .save-container:hover svg path
 {
-  stroke: green;
+  stroke: #4dfa5c;
 }
 .dropdown {
   position: fixed;

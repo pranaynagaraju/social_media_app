@@ -9,4 +9,4 @@ import { ProfileComponent } from './profile/profile.component';
 
 export const routes: Routes = [{path:'home',component:HomeComponent},{path:'',component:LandingPageComponent},{path:'login',component:LoginComponent},
 {path:'animation',component:AnimationComponent},{path:'signup',component:SignupComponent},
-{path:'profile',component:ProfileComponent}];
+{path:'profile/:id',component:ProfileComponent}];

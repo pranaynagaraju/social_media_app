@@ -45,7 +45,7 @@
 }
 .save-container:hover svg path
 {
-  stroke: green;
+  stroke: #4dfa5c;
 }
 .comments-modal
 {
@@ -58,4 +58,20 @@ align-items: center;
 position: fixed;
 z-index: 2000;
 top:0;
+}
+
+.skeleton-loader
+{
+  animation: skeleton 1s infinite linear alternate;
+}
+
+@keyframes
+skeleton
+{
+  0%{
+    background: hsl(200, 20%, 70%);
+  }
+  100%{
+    background: hsl(200, 17%, 80%);
+  }
 }

@@ -1,4 +1,5 @@
 export interface PostDetails {
+    saved: boolean;
     liked: boolean;
     postId: number;
     postImageUrl: string;

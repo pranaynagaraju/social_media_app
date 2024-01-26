@@ -1,5 +1,5 @@
-import { Component, ElementRef,HostListener, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, ElementRef,HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { auth } from '../../firebase/firebaseConfig';
 import { CommonModule } from '@angular/common';
 import { AnimationComponent } from '../animation/animation.component';
@@ -12,11 +12,12 @@ import { PostDetails } from '../interfaces/post-details.interface';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule,AnimationComponent,FormsModule,HttpClientModule,TimeAgoPipe],
+  imports: [CommonModule,AnimationComponent,FormsModule,HttpClientModule,TimeAgoPipe,RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnDestroy,OnInit{
+@ViewChild('addCommentRef') myInput: ElementRef | undefined;
  userLoggedIn=false;
  userDetails:any;
  userImage:any='../../assets/user.png';
@@ -27,6 +28,8 @@ export class HomeComponent implements OnDestroy,OnInit{
  isAnimation=true;
  profilebtnSelected:boolean;
  loginCheck:any;
+ search:any;
+ searchUserResult:any[]=[];
  token:any;
  postText: any="";
  postsList: any[]=[];
@@ -35,12 +38,16 @@ export class HomeComponent implements OnDestroy,OnInit{
  showPostDetails=false;
  postDetails: PostDetails = {} as PostDetails
  comment="";
- toggleModal() {
-   this.isModalVisible = !this.isModalVisible;
- }
+ subscription:any;
  url='http://localhost:8080/api/';
+ timeout:any;
+ searchLoading=false;
+
   constructor(private router:Router,private elRef: ElementRef, private http: HttpClient){
     this.profilebtnSelected=false;
+  }
+  toggleModal() {
+    this.isModalVisible = !this.isModalVisible;
   }
   ngOnDestroy(): void {
    if (this.loginCheck) {
@@ -54,22 +61,22 @@ export class HomeComponent implements OnDestroy,OnInit{
       this.token=localStorage.getItem('token');
     } 
     const verifyTokenUrl=this.url+"user/user-details"+"?token="+this.token;
-    this.loginCheck = this.http.get(verifyTokenUrl).subscribe(
-      response => {
-        let user: any = response;
-        this.userName = user.name;
-        this.userEmail = user.email;
-        if(user.photoURL)
-        {
-        this.userImage = user.photoURL;
-        }
-        console.log("API call here");
-      },
-      error => {
-          ;
-      }
-    )
-    this.getAllPosts();
+    // this.loginCheck = this.http.get(verifyTokenUrl).subscribe(
+    //   response => {
+    //     let user: any = response;
+    //     this.userName = user.name;
+    //     this.userEmail = user.email;
+    //     if(user.photoURL)
+    //     {
+    //     this.userImage = user.photoURL;
+    //     }
+    //     console.log("API call here");
+    //   },
+    //   error => {
+    //       ;
+    //   }
+    // )
+    // this.getAllPosts();
   }
 
   closeDropdown():void
@@ -79,6 +86,41 @@ export class HomeComponent implements OnDestroy,OnInit{
       this.profilebtnSelected=false;
     }
     
+  }
+  
+  searchUserDebounce(event: Event):void{
+    clearTimeout(this.timeout);
+    if((event.target as HTMLInputElement).value==="")
+    {
+      this.searchLoading=false;
+      this.searchUserResult=[];
+    }
+    else{
+  if(this.timeout)
+  {    this.searchLoading=false;
+    clearTimeout(this.timeout);
+  }
+  this.searchLoading=true;
+  this.timeout=setTimeout(() => {
+    this.searchUsers(event)
+  },750);
+}
+  }
+
+  searchUsers(event: Event):void{
+    if(this.subscription)
+    {
+      this.subscription.unsubscribe();
+    }
+    this.subscription= this.http.get(this.url+"user/search"+"?token="+this.token+"&q="+(event.target as HTMLInputElement).value).subscribe(
+      (response:any)=>{
+        if((event.target as HTMLInputElement).value!=="")
+        {
+        this.searchUserResult=response;
+        }
+        this.searchLoading=false;
+      }
+    );
   }
   onLikeClick(post:any) {
     post.liked = !post.liked;
@@ -100,8 +142,30 @@ export class HomeComponent implements OnDestroy,OnInit{
           console.log(response);
       }
     );
+
   }
-  
+  onSaveClick(post:any) {
+    post.saved = !post.saved;
+    const params = {
+      token: this.token,
+      postId: post.postId.toString(),
+    };
+    return this.http.post<string>(`${this.url}post/save`, null, { params }).subscribe(
+      (response:String)=>
+      {
+          console.log(response);
+      }
+    );
+  } 
+  toggleCaret():void
+  {
+    if(this.myInput)
+    {
+    const inputElement = this.myInput.nativeElement as HTMLInputElement;
+    inputElement.focus();
+    }
+  }
+
 onCommentClick(post:any)
 {
 
@@ -173,6 +237,9 @@ onProfileSelected():void
   }
   onImageError() {
     this.userImage = '../../assets/user.png';
+  }
+  onSearchImageError(item:any) {
+    item.userPhotoUrl = '../../assets/user.png';
   }
   onsignOutbtnclick():void
   {
